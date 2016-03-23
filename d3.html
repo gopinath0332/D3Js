@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>D3 Sample</title>
+    <script src="http://d3js.org/d3.v3.min.js">
+    </script>
+    <script>
+    var circleRadius = 40;
+
+    function createCircle() {
+
+        var radius = [{
+            "x": 198,
+            "y": 100,
+            "r": circleRadius
+        }, {
+            "x": 600,
+            "y": 100,
+            "r": circleRadius
+        }];
+        var svg = d3.select("body").append("svg").attr("height", 1000).attr("width", 1000);
+        var circle = svg.selectAll("rect").data(radius).enter().append("rect");
+        circle.attr("x", function(d) {
+                return d.x;
+            }).attr("y", function(d) {
+                return d.y;
+            })
+            .attr("fill", "blue").attr("width", 100).attr("height", 100).attr("stroke", "black").attr("stroke-width", "3");
+
+        connectCircles(svg);
+    }
+
+    function connectCircles(svg) {
+        //calculate coordinates for lines
+
+        var fcircle = d3.select("rect");
+        var fnode = fcircle.node();
+        var fdimension = fnode.getBBox();
+
+        var siblingdimension = fnode.nextElementSibling.getBBox();
+
+        var lineDimension = [{
+            "x1": fdimension.x + fdimension.width,
+            "y1": fdimension.y + (fdimension.height / 4),
+            "x2": siblingdimension.x,
+            "y2": siblingdimension.y + (siblingdimension.height / 4)
+        }, {
+            "x1": fdimension.x + fdimension.width,
+            "y1": fdimension.y + (fdimension.height / 2),
+            "x2": siblingdimension.x,
+            "y2": siblingdimension.y + (siblingdimension.height / 2)
+        }];
+
+        addElipse(lineDimension[0], svg);
+        //create line
+        svg.selectAll("line").data(lineDimension).enter().append("line").attr("x1", function(d) {
+            return d.x1;
+        }).attr("y1", function(d) {
+            return d.y1;
+        }).attr("x2", function(d) {
+            return d.x2;
+        }).attr("y2", function(d) {
+            return d.y2;
+        }).attr("stroke-width", 3).attr("stroke", "black");
+
+    }
+
+    function addElipse(dimension, svg) {
+        console.debug("dimension:::", dimension);
+        var elipsey = (dimension.y1) + 10;
+        var elipsex = (dimension.x2 - dimension.x1) + (dimension.x1 / 2);
+        var elipse = svg.append("ellipse").attr("cx", elipsex).attr("cy", elipsey).attr("rx", 40).attr("ry", 15).attr("fill", "white").attr("stroke", "black").attr("stroke-width", "3").attr("transform", "rotate(90 " + elipsex + "," + elipsey + ")");
+    }
+    </script>
+</head>
+
+<body onload="createCircle()">
+</body>
+
+</html>
