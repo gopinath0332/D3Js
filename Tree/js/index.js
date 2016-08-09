@@ -5,145 +5,130 @@ import "../css/tree.css";
 
 const [targetNode] = $("#target");
 // const targetNode = document.getElementById("target");
-var data = {
-    "name": "A1",
-    "depth": 0,
-    "children": [{
-        "name": "B1",
-    }, {
-        "name": "B2",
-    }, {
-        "name": "B3",
-    }, {
-        "name": "B4",
-    }]
-};
-
 
 class createTree {
     constructor(data) {
-        this.nodeGap = 75;
-        this.treeData = data;
         this.initTree();
     }
     initTree() {
         try {
+            var margin = {
+                    top: 20,
+                    right: 10,
+                    bottom: 20,
+                    left: 10
+                },
+                width = 100,
+                height = 600 - margin.top - margin.bottom;
+            this.id = 0;
+            this.tree = d3.layout.tree().size([height, width]);
+            this.root = {
+                "name": "Root"
+            };
+            this.nodes = this.tree(this.root);
+            this.root.parent = this.root;
+            this.root.x0 = this.root.x;
+            this.root.y0 = this.root.y;
+
+            this.diagonal = d3.svg.diagonal();
             this.svg = d3.select(targetNode).append("svg")
-                .attr({
-                    "width": 800,
-                    "height": 500
-                });
-            //Create base group for entire treee.
-            this.baseGroup = this.svg.append("g")
-                .attr("transform", "translate(250,30)scale(1.1)");
-            this.tree = d3.layout.tree()
-                .nodeSize([100, 70])
-                .separation(() => 1);
-            this.diagonal = d3.svg.diagonal().projection((d) => [d.x, d.y]);
+                .attr("width", width + "%")
+                .attr("height", height)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+            this.node = this.svg.selectAll(".node");
+            this.link = this.svg.selectAll(".link");
 
-            data.x0 = 0;
-            data.y0 = 0;
-            this.root = data;
-            this.buildTree(this.root);
+            this.buildTree();
         } catch (e) {
             console.error("Error in initialising tree::::", e);
         }
     }
     buildTree(source) {
         try {
-            //Calculate the tree layout
-            let nodes = this.tree.nodes(source);
-
-            //update fixed depth
-            nodes = nodes.map((node) => {
-                node.y = (node.depth * 75);
-                return node;
+            let diagonal = d3.svg.diagonal()
+                .projection(function(d) {
+                    return [d.x, d.y];
+                });
+            this.node = this.node.data(this.tree.nodes(this.root), (d, index) => {
+                d.y = d.depth * 75;
+                return d.id || (d.id = ++this.id);
             });
-            console.debug("source;::::", nodes);
-            this.nodes = nodes;
-
-            let node = this.baseGroup.selectAll("g.node").data(nodes, (d, i) => {
-                return d.id || (d.id = ++i);
-            });
-
-            let groupNode = node.enter().append("g").attr({
-                "class": "node",
-                "transform": () => {
-                    return "translate(" + source.x0 + "," + source.y0 + ")";
-                }
+            // this.link = this.link.data(this.tree.links(this.nodes), (d) => {
+            //     return d.target.id;
+            // });
+            // console.debug(this.node);
+            this.link = this.link.data(this.tree.links(this.tree.nodes(this.root)), (d) => {
+                return d.target.id;
             });
 
-            groupNode.append("circle").attr({
-                "r": 10
-            }).style("fill", "lightblue");
-
-            groupNode.append("text").attr({
-                "x": "-10",
-                "y": 5,
-                "text-anchor": "end",
-            }).text((d) => d.name);
-
-
-            //move nodes to their new position
-            let nodeUpdate = node.transition()
-                .duration(100)
-                .attr("transform", (d) => "translate(" + d.x + "," + d.y + ")");
-            //update existing nodes to the parent positions
-            let nodeExit = node.exit().transition()
-                .duration(100)
-                .attr("transform", (d) => "translate(" + source.y + "," + source.x + ")")
-                .remove();
-
-
-            // create links
-            let link = this.baseGroup.selectAll("path.link")
-                .data(this.tree.links(nodes), (d) => d.target.id);
-
-            link.enter().insert("path", "g").attr({
-                    "class": "link",
-                    "d": (d) => {
-                        var o = {
-                            x: source.x0,
-                            y: source.yo
-                        }
-                        return this.diagonal({
-                            source: o,
-                            target: o
-                        });
+            let groupNode = this.node.enter().append("g")
+                .attr({
+                    // "class": (d) => d.depth == 0 ? "root" : "node",
+                    "class": "node",
+                    "id": (d) => d.id,
+                    "parent": (d) => d.parent ? d.parent.id : null,
+                    "transform": (d) => {
+                        return "translate(" + d.x + "," + (d.y) + ")"
                     }
+                });
+            groupNode.append("circle")
+                .attr({
+                    "class": "circle",
+                    "r": 10,
+                }).style({
+                    "fill": "slategrey",
+                    "cursor": "pointer"
+                }).on("click", this.addNode.bind(this));
+            groupNode.append("text")
+                .attr({
+                    "x": 13,
+                    "dy": "0.75em",
+                    "text-anchor": "start"
+                        // "dy": (d) => d.children ? "0.35em" : "1.3em",
+                        // "text-anchor": (d) => d.children ? "start" : "end"
                 })
-                .transition()
-                .duration(100)
-                .attr("d", this.diagonal);
-
-
-            // Transition links to their new position.
-            link.transition()
-                .duration(100)
-                .attr("d", this.diagonal);
-
-
-            // Transition exiting nodes to the parent's new position.
-            link.exit().transition()
-                .duration(100)
-                .attr("d", function(d) {
-                    var o = {
-                        x: source.x,
-                        y: source.y
-                    };
-                    return this.diagonal({
-                        source: o,
-                        target: o
-                    });
+                .text((d) => {
+                    return d.name;
                 })
-                .remove();
+                .style({
+                    "font-size": 13
+                });
+            groupNode.append("image")
+                .attr({
+                    "xlink:href": "./images/fi-delete.svg",
+                    "x": 15,
+                    "y": -10,
+                    "height": 7,
+                    "width": 7,
+                    "class": (d) => d.depth == 0 ? "hide" : "removeNode"
+                })
+                .style("cursor", "pointer")
+                .on("click", this.removeNode.bind(this));
 
-            //Store old node position for transition
-            nodes = nodes.map((d) => {
+            var nodeUpdate = this.node.transition()
+                .attr("transform", function(d) {
+                    d.y = d.depth * 75;
+                    return "translate(" + d.x + "," + d.y + ")";
+                });
+
+            // Add entering links in the parent’s old position.
+            this.link.enter().insert("path", ".node")
+                .attr({
+                    "class": "link",
+                    "d": this.diagonal.projection((d) => [d.x, d.y])
+                });
+
+            let tr = this.svg.transition();
+            tr.selectAll(".link").attr("d", this.diagonal.projection((d) => {
+                return [d.x, d.y]
+            }));
+
+            tr.selectAll(".node").attr("transform", (d) => {
                 d.x0 = d.x;
                 d.y0 = d.y;
-                return d;
+                return "translate(" + d.x + "," + d.y + ")";
             });
 
         } catch (e) {
@@ -151,22 +136,59 @@ class createTree {
         }
     }
 
-    insertNodes(parentNode, name) {
+    addNode(parentNode, ...params) {
         try {
-            let nodeJson = {
-                "name": "C1"
+            // console.debug(parentNode, params);
+            var name = Math.random().toString(36).substring(24);
+            if (!name) {
+                name = Math.random().toString(36).substring(24);
+            }
+            var newNode = {
+                name
             };
-            let [newNode] = this.tree.nodes(nodeJson);
-            console.debug(newNode);
-            let [rootNode] = this.nodes;
-            rootNode.children.push(newNode);
-            this.buildTree(rootNode);
-
+            if (!parentNode.children) {
+                parentNode.children = [];
+            }
+            parentNode.children.push(newNode);
+            this.buildTree();
         } catch (e) {
             console.error("Error in updating nodes:::", e);
+        }
+    }
+
+    removeNode(deleteNode, ...params) {
+        try {
+            // console.debug(arguments);
+            //remove nodes
+            let nodes = this.tree.nodes(deleteNode);
+            if (nodes.length) {
+                this.svg.selectAll("g.node").data(nodes, (d) => {
+                    return d.id;
+                }).remove();
+            }
+            //remove links
+            let links = this.tree.links(nodes);
+            if (links) {
+                this.svg.selectAll("path.link").data(links, (d) => {
+                    return d.target.id;
+                }).remove();
+            }
+            //remvoe links to parent
+            this.svg.selectAll("path.link").filter((d) => {
+                return d.target.id == deleteNode.id ? true : false;
+            }).remove();
+            // remove node from tree heirarchy
+            let parent = deleteNode.parent;
+            parent.children.map((d) => {
+                if (d.id == deleteNode.id) {
+                    parent.children.splice(d, 1);
+                }
+            });
+        } catch (e) {
+            console.error("Error in removing node:::", e);
         }
     }
 }
 
 
-window.obj = new createTree(data);
+window.obj = new createTree();

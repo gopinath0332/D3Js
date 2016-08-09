@@ -119,6 +119,7 @@ function update(source) {
         .style("fill-opacity", 1e-6);
 
     // Update the links…
+    console.debug("links:::", tree.links(nodes));
     var link = vis.selectAll("path.link")
         .data(tree.links(nodes), function(d) {
             return d.target.id;

@@ -1,3 +1,14 @@
 svg {
     border: 1px solid grey;
 }
+.link {
+    fill: none;
+    stroke: #475b65;
+    strok-width: 2px;
+}
+.hide {
+    display: none;
+}
+.show {
+    display: block;
+}
