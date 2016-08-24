@@ -10,24 +10,29 @@ export default class Popover {
         let popSettings = {
             "html": true,
             "container": "body",
-            // "placement": "bottom",
             "content": content,
             "trigger": "click",
             "title": "Add node"
         };
-        $(this.hookNode).popover(popSettings).on("shown.bs.popover", () => {
-            $("#nodeName").focus();
-        });
+        $(this.hookNode)
+            .popover(popSettings)
+            .on("shown.bs.popover", () => {
+                $("#nodeName")
+                    .focus();
+            });
         this.show();
     }
     show() {
-        $(this.hookNode).popover("show");
+        $(this.hookNode)
+            .popover("show");
     }
     hide() {
-        $(this.hookNode).popover("hide");
+        $(this.hookNode)
+            .popover("hide");
     }
     destroy() {
-        $(this.hookNode).popover("destroy");
+        $(this.hookNode)
+            .popover("destroy");
     }
     getPopoverContent() {
         // <div>
@@ -47,14 +52,19 @@ export default class Popover {
             });
         content.append(input);
 
-        let btnGroup = $("<div>").addClass("popoverBtnGroup");
-        let addBtn = $("<button>").addClass("btn btn-primary").html("Add")
+        let btnGroup = $("<div>")
+            .addClass("popoverBtnGroup");
+        let addBtn = $("<button>")
+            .addClass("btn btn-primary")
+            .html("Add")
             .on("click", () => {
                 let [name] = input;
                 this.tree.addNode(this.nodeObj, name.value);
                 this.destroy();
             });
-        let closeBtn = $("<button>").addClass("btn btn-defalut").html("Close")
+        let closeBtn = $("<button>")
+            .addClass("btn btn-defalut")
+            .html("Close")
             .on("click", this.destroy.bind(this));
 
         btnGroup.append(closeBtn);

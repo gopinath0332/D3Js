@@ -7,8 +7,6 @@ import "bootstrap/dist/css/bootstrap.css";
 import "../css/tree.css";
 
 const [targetNode] = $("#target");
-const TOPOLOGY_DATA_URL = "../data/mdfdata.xml";
-// const targetNode = document.getElementById("target");
 
 
 class CreateTree {
@@ -48,7 +46,6 @@ class CreateTree {
             let [svgElement] = this.svg[0], [svgDimension] = svgElement.getClientRects();
             this.svg = this.svg.append("g")
                 .attr("transform", "translate(" + (svgDimension.width / 2.5) + "," + margin.top + ")");
-            // .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
             this.node = this.svg.selectAll(".node");
             this.link = this.svg.selectAll(".link");
@@ -79,7 +76,6 @@ class CreateTree {
             let groupNode = this.node.enter()
                 .append("g")
                 .attr({
-                    // "class": (d) => d.depth == 0 ? "root" : "node",
                     "class": "node",
                     "id": (d) => d.id,
                     "parent": (d) => d.parent ? d.parent.id : null,
@@ -99,8 +95,6 @@ class CreateTree {
                     "y": (rectDimension.h / 2),
                     "dy": "0.35em",
                     "text-anchor": "middle"
-                        // "dy": (d) => d.children ? "0.35em" : "1.3em",
-                        // "text-anchor": (d) => d.children ? "start" : "end"
                 })
                 .text((d) => {
                     return d.name;
@@ -111,19 +105,15 @@ class CreateTree {
 
             let toolbarGroup = groupNode.append("g")
                 .attr({
-                    // "x": (rectDimension.w - 5),
-                    // "y": 0,
                     "class": "toolbarGroup",
                     "transform": (d) => {
-                        return "translate(" + (rectDimension.w - 20) + "," + 0 + ")"
+                        return "translate(" + (rectDimension.w - 20) + "," + 0 + ")";
                     }
                 });
             let context = this;
             let add = toolbarGroup.append("image")
                 .attr({
                     "xlink:href": "./images/fi-plus.svg",
-                    // "x": (rectDimension.w - 5),
-                    // "y": -10,
                     "x": 0,
                     "y": 5,
                     "height": 8,
@@ -137,8 +127,6 @@ class CreateTree {
             toolbarGroup.append("image")
                 .attr({
                     "xlink:href": "./images/fi-delete.svg",
-                    // "x": (rectDimension.w - 5),
-                    // "y": -10,
                     "x": 10,
                     "y": 5,
                     "height": 6,
@@ -167,7 +155,7 @@ class CreateTree {
             let tr = this.svg.transition();
             tr.selectAll(".link")
                 .attr("d", this.diagonal.projection((d) => {
-                    return [d.x + (rectDimension.w / 2), d.y + (rectDimension.h / 2)]
+                    return [d.x + (rectDimension.w / 2), d.y + (rectDimension.h / 2)];
                 }));
 
             tr.selectAll(".node")
@@ -206,7 +194,6 @@ class CreateTree {
 
     removeNode(deleteNode, ...params) {
         try {
-            // console.debug(arguments);
             //remove nodes
             let nodes = this.tree.nodes(deleteNode);
             if (nodes.length) {
