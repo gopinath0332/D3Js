@@ -12,3 +12,17 @@ svg {
 .show {
     display: block;
 }
+.rect {
+    fill: white;
+    stroke: #475b65;
+    stroke-width: 2px;
+    cursor: pointer;
+}
+.btn {
+    margin: 5px 5px 0px 0px;
+}
+.popoverBtnGroup {
+    float: right;
+    margin-bottom: 10px;
+    margin-top: 5px;
+}
